@@ -7,7 +7,7 @@ tools {
   stages {
     stage('Setup and Run Tests on BrowserStack') {
       steps {
-        browserstack(credentialsId: 'bb271ec7-4bbc-4582-b43e-3a19fd4cca1b') {
+        browserstack(credentialsId: 'c0a615d1-bcd6-4909-9043-fcca87fd1421') {
           sh 'npm install'
           sh 'npm run sample-test'
 
