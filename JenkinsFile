@@ -9,7 +9,7 @@ tools {
       steps {
         browserstack(credentialsId: 'bb271ec7-4bbc-4582-b43e-3a19fd4cca1b') {
           sh 'npm install'
-          sh 'npx playwright test --config=./playwright.config.js'
+          sh 'npm run sample-test'
         }
       }
     }
