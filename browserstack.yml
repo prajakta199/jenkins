@@ -28,8 +28,8 @@ buildIdentifier: '#${BUILD_NUMBER}' # Supports strings along with either/both ${
 # Entire list available here -> (https://www.browserstack.com/list-of-browsers-and-platforms/automate)
 platforms:
   - os: Windows
-    osVersion: 10
-    browserName: Edge
+    osVersion: 11
+    browserName: chrome
     browserVersion: latest
     
 # =======================
