@@ -1,30 +1,11 @@
-void loadCommonDataScript() {
-    env.BRANCH_NAME = params.BRANCH ?: "master"
-    checkout(poll: false, scm: [$class                           : 'GitSCM',
-                                branches                         : [[name: "origin/${env.BRANCH_NAME}",],],
-                                doGenerateSubmoduleConfigurations: false,
-                                extensions                       : [[$class: 'UserIdentity', email: 'build@jenkins-prd.tango.corp', name: 'build',],
-                                                                    [$class      : 'CloneOption',
-                                                                     noTags      : true,
-                                                                     shallow     : false,
-                                                                     honorRefspec: true,
-                                                                     reference   : "${env.HOME}/.tangobuild/tango",
-                                                                     timeout     : 30,],
-                                                                    [$class: 'CleanBeforeCheckout', deleteUntrackedNestedRepositories: true,],],
-                                submoduleCfg                     : [],
-                                userRemoteConfigs                : [[credentialsId: 'gitlab_ssh_build',
-                                                                     url          : 'git@gitlab.tango.me:serverapp/web-automation.git',
-                                                                     refspec      : "+refs/heads/${env.BRANCH_NAME}:refs/remotes/origin/${env.BRANCH_NAME} ",],],],)
-    loader.loadLocalScripts(['commonData': './ci/CommonData.groovy',])
+node {
+    loadCommonDataScript()
 }
-
-loadCommonDataScript()
 
 def allureLaunchId = 0
 def allureTestOpsLaunch = "${commonData.ALLURE_TEST_OPS_LINK}/launch"
 
 pipeline {
-
     agent {
         label "role:gcpbuild7"
     }
@@ -43,120 +24,4 @@ pipeline {
         string defaultValue: "", description: 'Test(s) filtered for execution. Possible input: numeric allure id(s), full/partial test spec name, tests directory, e.g. src/tests/e2e/login. If BROWSER is MOBILE then pass only numeric allure id(s).', name: 'TEST_FILTER', trim: true
         booleanParam defaultValue: false, name: 'is_allure_id', description: 'If selected then pass in TEST_FILTER field only one numeric allure id or several allure ids separated by space or comma.'
         booleanParam defaultValue: false, name: 'update_snapshots', description: 'Update snapshots to google cloud for current tests'
-        booleanParam defaultValue: false, name: 'RP_ENABLED', description: 'If selected then a new launch will be reported to https://reportportal.tango.net/ui/#web_client/launches'
-        string defaultValue: params.tests_parallel_threads ?: "6", description: 'Count of parallel threads for WEB Playwright tests run', name: 'tests_parallel_threads', trim: true
-    }
-
-    environment {
-        GOOGLE_APPLICATION_CREDENTIALS = credentials('jenkins-tangome-staging.iam.gserviceaccount.com')
-        NODEJS_HOME = "${tool 'nodejs18'}"
-        PATH = "${env.NODEJS_HOME}/bin:${env.PATH}"
-        ALLURE_ENDPOINT = "${commonData.ALLURE_TEST_OPS_LINK}"
-        ALLURE_TOKEN = credentials('allure-jenkins-token')
-        RP_API_KEY = credentials('report-portal-jenkins-api-key')
-        ALLURE_PROJECT_ID = '37'
-        SLACK_TOKEN = credentials('slack-jenkins-app-token')
-    }
-
-    stages {
-        
-        stage('Setup BrowserStack') {
-            steps {
-                script {
-                    browserstack(credentialsId: 'ce17c56d-ea58-4b36-84cf-8532bbbc6e03', localConfig: [localOptions: '', localPath: '']) {
-                        script {
-                            echo "Downloading BrowserStack binary..."
-                            if (!fileExists('BrowserStackLocal-linux-x64.zip')) {
-                                sh 'wget "https://www.browserstack.com/browserstack-local/BrowserStackLocal-linux-x64.zip"'
-                            }
-                            sh 'unzip -o BrowserStackLocal-linux-x64.zip'
-                            echo "Starting BrowserStack Local tunnel..."
-                            sh './BrowserStackLocal --key $BROWSERSTACK_ACCESS_KEY --daemon start'
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('E2E tests') {
-            steps {
-                script {
-                    browserstack(credentialsId: 'ce17c56d-ea58-4b36-84cf-8532bbbc6e03') {
-                        withAllureUpload(projectId: ALLURE_PROJECT_ID, results: [[path: 'allure-results']]) {
-                            allureTestOpsLaunch += "/${env.ALLURE_LAUNCH_ID}"
-                            allureLaunchId = env.ALLURE_LAUNCH_ID
-
-                            def testPlanPath = env.ALLURE_TESTPLAN_PATH
-                            def testIdsAsString = ""
-
-                            if (testPlanPath) {
-                                echo "testplan.json file path with tests selected manually in allure ${testPlanPath}"
-                                try {
-                                    def jsonParsed = readJSON file: testPlanPath
-                                    echo "Parsed test plan JSON: ${jsonParsed}"
-
-                                    testIdsAsString = "'${jsonParsed.tests.collect { it.id }.toSet().join("|")}'"
-                                    echo "Test IDs provided manually from allure: ${testIdsAsString}"
-
-                                } catch (Exception e) {
-                                    echo "An error occurred during reading testplan.json file with tests manually selected in allure: ${e.getMessage()}"
-                                    currentBuild.result = 'FAILURE'
-                                    return
-                                }
-                            } else {
-                                echo "Test plan file with selected in allure tests doesn't exist, all tests will be executed unless some value is added in job test_filter field"
-                            }
-                            sh 'npx setup --username "BROWSERSTACK_USERNAME" --key "BROWSERSTACK_ACCESS_KEY"'
-                            def fullCommand = getFullRunTestCommand(params, testIdsAsString)
-                            echo fullCommand
-                            sh fullCommand
-                            browserStackReportPublisher 'automate'
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-def getFullRunTestCommand(params, testIdsAsString) {
-    def stage = "${params.NAMESPACE}"
-    def lwc = "${params.LWC_TYPE}"
-    def stageWithLwc = "ENVIRONMENT=${stage} LWC=${lwc}"
-    def testFilter = params.TEST_FILTER
-    def workers = "--workers=${params.tests_parallel_threads}"
-    def isAllureId = params.is_allure_id?.toBoolean()
-    def isAllureIdProvidedInTestFilter = !(testFilter.isEmpty()) && isAllureId
-    def projects = getProjectToRun(params.BROWSER)
-    def baseRunTestCommand = "npx browserstack-node-sdk playwright test registration.spec.ts ${stageWithLwc} ${workers} --config=./playwright.local.config.js ${projects}"
-    if (testIdsAsString) {
-        return "${baseRunTestCommand} -g ${testIdsAsString}"
-    } else if (!testFilter) {
-        return baseRunTestCommand
-    } else if (isAllureId && testFilter) {
-        return "${baseRunTestCommand} -g ${getAllureIdsAsString(testFilter)}"
-    } else {
-        return "${baseRunTestCommand} ${testFilter}"
-    }
-}
-
-def getProjectToRun(String browser) {
-    switch (browser) {
-        case "chrome":
-            return "--project=osx_big_sur_chrome"
-        case "edge":
-            return "--project=win10_edge"
-        case "all":
-            return "--project=osx_big_sur_chrome --project=win10_edge"
-        default:
-            echo "Unknown browser specified: ${browser}"
-            currentBuild.result = 'FAILURE'
-            error("Unsupported browser: ${browser}")
-    }
-}
-
-def getAllureIdsAsString(testFilter) {
-    def commaAndWhitespaceCharactersRegex = /\s*,\s*|\s+/
-    def testFilterAllureIds = testFilter.split(commaAndWhitespaceCharactersRegex).join("|")
-    return "'${testFilterAllureIds}'"
-}
+        booleanParam defaultValue: false, name: 'RP_ENABLED', description: 'If selected then a new launch will be re_
