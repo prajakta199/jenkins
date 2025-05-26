@@ -39,48 +39,7 @@ pipeline {
     }
 
     stages {
-        stage('Gcloud auth') {
-            steps {
-                sh "gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS"
-                sh "yes | gcloud auth configure-docker"
-            }
-        }
-
-        stage('Checkout code repository') {
-            steps {
-                buildName "${params.NAMESPACE}_${params.LWC_TYPE}_${params.BRANCH}"
-                checkout poll: false,
-                        scm: [$class                           : 'GitSCM',
-                              branches                         : [[name: params.BRANCH]],
-                              doGenerateSubmoduleConfigurations: false,
-                              extensions                       : [
-                                      [$class: 'UserIdentity', email: 'build@jenkins-prd.tango.corp', name: 'build'],
-                                      [$class: 'CleanBeforeCheckout', deleteUntrackedNestedRepositories: true],
-                                      [$class: 'PruneStaleBranch'],
-                                      [
-                                              $class      : 'CloneOption',
-                                              depth       : 1,
-                                              noTags      : true,
-                                              shallow     : false,
-                                              honorRefspec: true,
-                                              reference   : "/home/build/.tangobuild/tango",
-                                      ]
-                              ],
-                              submoduleCfg                     : [],
-                              userRemoteConfigs                : [[credentialsId: 'gitlab_ssh_build', url: 'git@gitlab.tango.me:serverapp/web-automation.git']]
-                        ]
-            }
-        }
-
-        stage('Generate protobufs') {
-            steps {
-                script {
-                    sh 'npm install'
-                    sh 'npm run generate:proto'
-                }
-            }
-        }
-
+        
         stage('Setup BrowserStack') {
             steps {
                 script {
@@ -149,7 +108,7 @@ def getFullRunTestCommand(params, testIdsAsString) {
     def isAllureId = params.is_allure_id?.toBoolean()
     def isAllureIdProvidedInTestFilter = !(testFilter.isEmpty()) && isAllureId
     def projects = getProjectToRun(params.BROWSER)
-    def baseRunTestCommand = "npx browserstack-node-sdk playwright test registration.spec.ts ${stageWithLwc} ${workers} --project=${projects}"
+    def baseRunTestCommand = " npx browserstack-node-sdk playwright test registration.spec.ts ${stageWithLwc} ${workers} --config=./playwright.local.config.js --project=${projects}"
     if (testIdsAsString) {
         return "${baseRunTestCommand} -g ${testIdsAsString}"
     } else if (!testFilter) {
