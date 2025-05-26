@@ -39,11 +39,11 @@ pipeline {
 def getProjectToRun(String browser) {
   switch (browser) {
     case "chrome":
-      return "'--project=osx_big_sur_chrome'"
+      return "'--project=chrome-latest:OSX Big Sur-browserstack'"
     case "edge":
-      return "'--project=win10_edge'"
+      return "'--project=edge-latest:Windows 10-browserstack'"
     case "all":
-      return "'--project=osx_big_sur_chrome,win10_edge'"
+      return "'--project=chrome-latest:OSX Big Sur-browserstack,edge-latest:Windows 10-browserstack'"
     default:
       error "Unknown browser specified: ${browser}"
   }
