@@ -9,6 +9,11 @@ pipeline {
     choice(name: 'BROWSER', choices: ['chrome', 'firefox', 'safari', 'edge', 'android', 'ios', 'all', 'chrome_seq'], description: 'Choose the browser to run tests on')
   }
 
+  environment {
+    BROWSERSTACK_USERNAME = credentials('bs-username')
+    BROWSERSTACK_ACCESS_KEY = credentials('bs-access-key')
+  }
+
   stages {
     stage('Install Dependencies') {
       steps {
@@ -19,6 +24,7 @@ pipeline {
 
     stage('Run Tests on BrowserStack') {
       steps {
+        browserstack(credentialsId: 'ce17c56d-ea58-4b36-84cf-8532bbbc6e03')
         script {
           def project = getProjectToRun(params.BROWSER)
           def command = "npx browserstack-node-sdk playwright test --config=./playwright.local.config.js --project=${project}"
@@ -29,6 +35,7 @@ pipeline {
     }
   }
 }
+
 def getProjectToRun(String browser) {
   switch (browser) {
     case "chrome":
@@ -36,13 +43,13 @@ def getProjectToRun(String browser) {
     case "edge":
       return "win10_edge"
     case "firefox":
-      return "firefox_latest"  // You should define this in your config
+      return "firefox_latest"
     case "safari":
-      return "webkit_osx_ventura" // Define in config accordingly
+      return "webkit_osx_ventura"
     case "android":
-      return "android_emulator" // Define accordingly
+      return "android_emulator"
     case "ios":
-      return "ios_simulator" // Define accordingly
+      return "ios_simulator"
     case "all":
       return "osx_big_sur_chrome,win10_edge,firefox_latest"
     default:
