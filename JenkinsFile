@@ -6,8 +6,7 @@ pipeline {
   }
 
   environment {
-    BROWSERSTACK_USERNAME = credentials('browserstack-username')
-    BROWSERSTACK_ACCESS_KEY = credentials('browserstack-accesskey')
+    BROWSERSTACK_ACCESS_KEY = credentials('Access Key')
   }
 
   parameters {
