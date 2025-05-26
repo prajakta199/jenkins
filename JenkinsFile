@@ -5,9 +5,13 @@ pipeline {
     nodejs "node"
   }
 
-  parameters {
-    choice(name: 'BROWSER', choices: ['chrome', 'firefox', 'safari', 'edge', 'all', 'chrome_seq'], description: 'Choose the browser to run tests on')
-  }
+ arameters {
+  choice(
+    name: 'BROWSER',
+    choices: ['chrome', 'edge', 'all'],
+    description: 'Choose the browser to run tests on (based on defined Playwright projects)'
+  )
+}
 
   stages {
     stage('Install Dependencies') {
