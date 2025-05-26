@@ -6,7 +6,7 @@ pipeline {
   }
 
   parameters {
-    choice(name: 'BROWSER', choices: ['chrome', 'firefox', 'safari', 'edge', 'android', 'ios', 'all', 'chrome_seq'], description: 'Choose the browser to run tests on')
+    choice(name: 'BROWSER', choices: ['chrome', 'firefox', 'safari', 'edge', 'all', 'chrome_seq'], description: 'Choose the browser to run tests on')
   }
 
   stages {
@@ -35,19 +35,11 @@ pipeline {
 def getProjectToRun(String browser) {
   switch (browser) {
     case "chrome":
-      return "chrome-latest:OSX Big Sur-browserstack"
+      return "osx_big_sur_chrome"
     case "edge":
-      return "edge-latest:Windows 10-browserstack"
-    case "firefox":
-      return "firefox-latest:Windows 10-browserstack"
-    case "safari":
-      return "safari-latest:OSX Ventura-browserstack"
-    case "android":
-      return "android-emulator:Android 11.0-browserstack"
-    case "ios":
-      return "ios-simulator:iPhone 13-browserstack"
+      return "win10_edge"
     case "all":
-      return "chrome-latest:OSX Big Sur-browserstack,edge-latest:Windows 10-browserstack"
+      return "osx_big_sur_chrome,win10_edge"
     default:
       error "Unknown browser specified: ${browser}"
   }
