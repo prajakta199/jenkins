@@ -165,26 +165,15 @@ def getFullRunTestCommand(params, testIdsAsString) {
 def getProjectToRun(String browser) {
     switch (browser) {
         case "chrome":
-            return "'chrome-latest:Linux -browserstack'"
-        case "firefox":
-            return "--project=Firefox"
-        case "safari":
-            return "'playwright-webkit-latest:OSX Ventura-browserstack'"
-        case "chrome_seq":
-            return "'chrome-latest:OSX Big Sur-browserstack'"
+            return "--project=osx_big_sur_chrome"
         case "edge":
-            return "--project=Edge"
-        case "android":
-            return "--project=Android"
-        case "ios":
-            return "--project=Iphone"
+            return "--project=win10_edge"
         case "all":
-            return "'chrome-latest:OSX Sequoia-browserstack','playwright-webkit-latest:OSX Ventura-browserstack','chrome-latest:Windows 11-browserstack'"
-        case "MOBILE":
-            return "--project=Mobile"
+            return "--project=osx_big_sur_chrome --project=win10_edge"
         default:
             echo "Unknown browser specified: ${browser}"
             currentBuild.result = 'FAILURE'
+            error("Unsupported browser: ${browser}")
     }
 }
 
