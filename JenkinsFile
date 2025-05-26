@@ -84,7 +84,7 @@ pipeline {
         stage('Setup BrowserStack') {
             steps {
                 script {
-                    browserstack(credentialsId: '888ee862-7b69-4640-b864-2eb206441480', localConfig: [localOptions: '', localPath: '']) {
+                    browserstack(credentialsId: 'ce17c56d-ea58-4b36-84cf-8532bbbc6e03', localConfig: [localOptions: '', localPath: '']) {
                         script {
                             echo "Downloading BrowserStack binary..."
                             if (!fileExists('BrowserStackLocal-linux-x64.zip')) {
@@ -102,7 +102,7 @@ pipeline {
         stage('E2E tests') {
             steps {
                 script {
-                    browserstack(credentialsId: '888ee862-7b69-4640-b864-2eb206441480') {
+                    browserstack(credentialsId: 'ce17c56d-ea58-4b36-84cf-8532bbbc6e03') {
                         withAllureUpload(projectId: ALLURE_PROJECT_ID, results: [[path: 'allure-results']]) {
                             allureTestOpsLaunch += "/${env.ALLURE_LAUNCH_ID}"
                             allureLaunchId = env.ALLURE_LAUNCH_ID
@@ -127,7 +127,7 @@ pipeline {
                             } else {
                                 echo "Test plan file with selected in allure tests doesn't exist, all tests will be executed unless some value is added in job test_filter field"
                             }
-                            sh 'npx setup --username "yauhenipapovich_wkODzK" --key "m5xPG3EK6L9QsJRhGFiK"'
+                            sh 'npx setup --username "BROWSERSTACK_USERNAME" --key "BROWSERSTACK_ACCESS_KEY"'
                             def fullCommand = getFullRunTestCommand(params, testIdsAsString)
                             echo fullCommand
                             sh fullCommand
