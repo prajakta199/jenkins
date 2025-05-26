@@ -17,12 +17,12 @@ const config = {
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'line',
   /* Configure projects for major browsers */
-  projects: [
+projects: [
     {
-      name: 'chrome',
+      name: 'playwright-firefox',
       use: {
-        browserName: 'chromium',
-        channel: 'chrome',
+        browserName: 'firefox',
+        channel: 'firefox',
       },
     },
   ],
