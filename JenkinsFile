@@ -5,7 +5,7 @@ pipeline {
     nodejs "node"
   }
 
- arameters {
+ parameters {
   choice(
     name: 'BROWSER',
     choices: ['chrome', 'edge', 'all'],
