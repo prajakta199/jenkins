@@ -9,11 +9,6 @@ pipeline {
     choice(name: 'BROWSER', choices: ['chrome', 'firefox', 'safari', 'edge', 'android', 'ios', 'all', 'chrome_seq'], description: 'Choose the browser to run tests on')
   }
 
-  environment {
-    BROWSERSTACK_USERNAME = credentials('bs-username')
-    BROWSERSTACK_ACCESS_KEY = credentials('bs-access-key')
-  }
-
   stages {
     stage('Install Dependencies') {
       steps {
