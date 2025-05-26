@@ -7,7 +7,7 @@ tools {
   stages {
     stage('Setup and Run Tests on BrowserStack') {
       steps {
-        browserstack(credentialsId: 'c0a615d1-bcd6-4909-9043-fcca87fd1421') {
+        browserstack(credentialsId: 'ce17c56d-ea58-4b36-84cf-8532bbbc6e03') {
           sh 'npm install'
           sh 'npx playwright install --with-deps'
           sh 'npm run sample-test'
