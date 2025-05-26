@@ -19,10 +19,21 @@ const config = {
   /* Configure projects for major browsers */
 projects: [
     {
-      name: 'playwright-firefox',
+      name: 'osx_big_sur_chrome',
       use: {
-        browserName: 'firefox',
-        channel: 'firefox',
+        browserName: 'chromium',
+        channel: 'chrome',
+        permissions: ['camera', 'microphone'],
+        args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'],
+      },
+    },
+    {
+      name: 'win10_edge',
+      use: {
+        browserName: 'chromium',
+        channel: 'msedge',
+        permissions: ['camera', 'microphone'],
+        args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'],
       },
     },
   ],
