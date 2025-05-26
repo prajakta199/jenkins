@@ -21,22 +21,6 @@ pipeline {
       }
     }
 
-    stage('Setup BrowserStack Local') {
-      steps {
-        script {
-          browserstack(credentialsId: 'ce17c56d-ea58-4b36-84cf-8532bbbc6e03', localConfig: [localOptions: '', localPath: '']) {
-            echo "Downloading BrowserStack binary..."
-            if (!fileExists('BrowserStackLocal-linux-x64.zip')) {
-              sh 'wget "https://www.browserstack.com/browserstack-local/BrowserStackLocal-linux-x64.zip"'
-            }
-            sh 'unzip -o BrowserStackLocal-linux-x64.zip'
-            echo "Starting BrowserStack Local tunnel..."
-            sh "./BrowserStackLocal --key ${env.BROWSERSTACK_ACCESS_KEY} --daemon start"
-          }
-        }
-      }
-    }
-
     stage('Run Tests on BrowserStack') {
       steps {
         script {
