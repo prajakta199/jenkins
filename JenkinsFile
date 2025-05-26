@@ -5,10 +5,6 @@ pipeline {
     nodejs "node"
   }
 
-  environment {
-    BROWSERSTACK_ACCESS_KEY = credentials('Access Key')
-  }
-
   parameters {
     choice(name: 'BROWSER', choices: ['chrome', 'firefox', 'safari', 'edge', 'android', 'ios', 'all', 'chrome_seq'], description: 'Choose the browser to run tests on')
   }
