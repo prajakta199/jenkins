@@ -1,19 +1,72 @@
 pipeline {
   agent any
-tools {
+
+  tools {
     nodejs "node"
-}
+  }
+
+  environment {
+    BROWSERSTACK_USERNAME = credentials('browserstack-username')
+    BROWSERSTACK_ACCESS_KEY = credentials('browserstack-accesskey')
+  }
+
+  parameters {
+    choice(name: 'BROWSER', choices: ['chrome', 'firefox', 'safari', 'edge', 'android', 'ios', 'all', 'chrome_seq'], description: 'Choose the browser to run tests on')
+  }
 
   stages {
-    stage('Setup and Run Tests on BrowserStack') {
+    stage('Install Dependencies') {
       steps {
-        browserstack(credentialsId: 'ce17c56d-ea58-4b36-84cf-8532bbbc6e03') {
-          sh 'npm install'
-          sh 'npx playwright install --with-deps'
-          sh 'npm run sample-test'
+        sh 'npm install'
+        sh 'npx playwright install --with-deps'
+      }
+    }
 
+    stage('Setup BrowserStack Local') {
+      steps {
+        script {
+          browserstack(credentialsId: 'ce17c56d-ea58-4b36-84cf-8532bbbc6e03', localConfig: [localOptions: '', localPath: '']) {
+            echo "Downloading BrowserStack binary..."
+            if (!fileExists('BrowserStackLocal-linux-x64.zip')) {
+              sh 'wget "https://www.browserstack.com/browserstack-local/BrowserStackLocal-linux-x64.zip"'
+            }
+            sh 'unzip -o BrowserStackLocal-linux-x64.zip'
+            echo "Starting BrowserStack Local tunnel..."
+            sh "./BrowserStackLocal --key ${env.BROWSERSTACK_ACCESS_KEY} --daemon start"
+          }
         }
       }
     }
+
+    stage('Run Tests on BrowserStack') {
+      steps {
+        script {
+          def project = getProjectToRun(params.BROWSER)
+          def command = "npx browserstack-node-sdk playwright test --config=./playwright.local.config.js --project=${project}"
+          echo "Running: ${command}"
+          sh command
+        }
+      }
+    }
+  }
+}
+def getProjectToRun(String browser) {
+  switch (browser) {
+    case "chrome":
+      return "osx_big_sur_chrome"
+    case "edge":
+      return "win10_edge"
+    case "firefox":
+      return "firefox_latest"  // You should define this in your config
+    case "safari":
+      return "webkit_osx_ventura" // Define in config accordingly
+    case "android":
+      return "android_emulator" // Define accordingly
+    case "ios":
+      return "ios_simulator" // Define accordingly
+    case "all":
+      return "osx_big_sur_chrome,win10_edge,firefox_latest"
+    default:
+      error "Unknown browser specified: ${browser}"
   }
 }
