@@ -1,93 +1,19 @@
-node {
-    loadCommonDataScript()
+pipeline {
+  agent any
+tools {
+    nodejs "node"
 }
 
-def allureLaunchId = 0
-def allureTestOpsLaunch = "${commonData.ALLURE_TEST_OPS_LINK}/launch"
+  stages {
+    stage('Setup and Run Tests on BrowserStack') {
+      steps {
+        browserstack(credentialsId: 'ce17c56d-ea58-4b36-84cf-8532bbbc6e03') {
+          sh 'npm install'
+          sh 'npx playwright install --with-deps'
+          sh 'npm run sample-test'
 
-pipeline {
-    agent {
-        label "role:gcpbuild7"
-    }
-
-    options {
-        timeout(time: 2, unit: 'HOURS')
-    }
-
-    parameters {
-        choice choices: commonData.ALL_NAMESPACES, description: 'Stage for run tests', name: 'NAMESPACE'
-        choice choices: ["lwc", "lwc-2", "lwc-3", "lwc-4", "lwc-5", "lwc-6"], name: 'LWC_TYPE'
-        string defaultValue: "master", description: 'Git branch', name: 'BRANCH', trim: true
-        choice choices: ["chrome", "firefox", "safari", "edge", "all", "mobile","chrome_seq"], name: 'BROWSER', description: "Currently this field is ignored"
-        booleanParam defaultValue: false, name: 'slack_notification'
-        string defaultValue: '#', description: "Notifications to Slack channel", name: 'slackNotificationChannel', trim: true
-        string defaultValue: "", description: 'Test(s) filtered for execution. Possible input: numeric allure id(s), full/partial test spec name, tests directory, e.g. src/tests/e2e/login. If BROWSER is MOBILE then pass only numeric allure id(s).', name: 'TEST_FILTER', trim: true
-        booleanParam defaultValue: false, name: 'is_allure_id', description: 'If selected then pass in TEST_FILTER field only one numeric allure id or several allure ids separated by space or comma.'
-        booleanParam defaultValue: false, name: 'update_snapshots', description: 'Update snapshots to google cloud for current tests'
-        booleanParam defaultValue: false, name: 'RP_ENABLED', description: 'If selected then a new launch will be reported to https://reportportal.tango.net/ui/#web_client/launches'
-        string defaultValue: params.tests_parallel_threads ?: "6", description: 'Count of parallel threads for WEB Playwright tests run', name: 'tests_parallel_threads', trim: true
-    }
-
-    environment {
-        GOOGLE_APPLICATION_CREDENTIALS = credentials('jenkins-tangome-staging.iam.gserviceaccount.com')
-        NODEJS_HOME = "${tool 'nodejs18'}"
-        PATH = "${env.NODEJS_HOME}/bin:${env.PATH}"
-        ALLURE_ENDPOINT = "${commonData.ALLURE_TEST_OPS_LINK}"
-        ALLURE_TOKEN = credentials('allure-jenkins-token')
-        RP_API_KEY = credentials('report-portal-jenkins-api-key')
-        ALLURE_PROJECT_ID = '37'
-        SLACK_TOKEN = credentials('slack-jenkins-app-token')
-    }
-
-    stages {
-        stage('Setup BrowserStack') {
-            steps {
-                script {
-                    browserstack(credentialsId: 'ce17c56d-ea58-4b36-84cf-8532bbbc6e03', localConfig: [localOptions: '', localPath: '']) {
-                        script {
-                            echo "Downloading BrowserStack binary..."
-                            if (!fileExists('BrowserStackLocal-linux-x64.zip')) {
-                                sh 'wget "https://www.browserstack.com/browserstack-local/BrowserStackLocal-linux-x64.zip"'
-                            }
-                            sh 'unzip -o BrowserStackLocal-linux-x64.zip'
-                            echo "Starting BrowserStack Local tunnel..."
-                            sh './BrowserStackLocal --key $BROWSERSTACK_ACCESS_KEY --daemon start'
-                        }
-                    }
-                }
-            }
         }
-
-        stage('E2E tests') {
-            steps {
-                script {
-                    browserstack(credentialsId: 'ce17c56d-ea58-4b36-84cf-8532bbbc6e03') {
-                        withAllureUpload(projectId: ALLURE_PROJECT_ID, results: [[path: 'allure-results']]) {
-                            allureTestOpsLaunch += "/${env.ALLURE_LAUNCH_ID}"
-                            allureLaunchId = env.ALLURE_LAUNCH_ID
-
-                            def testPlanPath = env.ALLURE_TESTPLAN_PATH
-                            def testIdsAsString = ""
-
-                            if (testPlanPath) {
-                                echo "testplan.json file path with tests selected manually in allure ${testPlanPath}"
-                                try {
-                                    def jsonParsed = readJSON file: testPlanPath
-                                    echo "Parsed test plan JSON: ${jsonParsed}"
-
-                                    testIdsAsString = "'${jsonParsed.tests.collect { it.id }.toSet().join("|")}'"
-                                    echo "Test IDs provided manually from allure: ${testIdsAsString}"
-
-                                } catch (err) {
-                                    echo "Error reading or parsing test plan JSON: ${err}"
-                                }
-                            }
-
-                            // Add your test execution logic here
-                        }
-                    }
-                }
-            }
-        }
+      }
     }
+  }
 }
