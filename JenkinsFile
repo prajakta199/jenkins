@@ -21,6 +21,7 @@ pipeline {
       }
     }
 
+
     stage('Run Tests on BrowserStack') {
       steps {
         browserstack(credentialsId: 'ce17c56d-ea58-4b36-84cf-8532bbbc6e03') {
