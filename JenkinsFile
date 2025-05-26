@@ -39,7 +39,7 @@ pipeline {
 def getProjectToRun(String browser) {
   switch (browser) {
     case "chrome":
-      return "osx_big_sur_chrome"
+      return "chrome-latest:OSX Big Sur-browserstack"
     case "edge":
       return "win10_edge"
     case "all":
