@@ -1,3 +1,23 @@
+void loadCommonDataScript() {
+    env.BRANCH_NAME = params.BRANCH ?: "master"
+    checkout(poll: false, scm: [$class                           : 'GitSCM',
+                                branches                         : [[name: "origin/${env.BRANCH_NAME}",],],
+                                doGenerateSubmoduleConfigurations: false,
+                                extensions                       : [[$class: 'UserIdentity', email: 'build@jenkins-prd.tango.corp', name: 'build',],
+                                                                    [$class      : 'CloneOption',
+                                                                     noTags      : true,
+                                                                     shallow     : false,
+                                                                     honorRefspec: true,
+                                                                     reference   : "${env.HOME}/.tangobuild/tango",
+                                                                     timeout     : 30,],
+                                                                    [$class: 'CleanBeforeCheckout', deleteUntrackedNestedRepositories: true,],],
+                                submoduleCfg                     : [],
+                                userRemoteConfigs                : [[credentialsId: 'gitlab_ssh_build',
+                                                                     url          : 'git@gitlab.tango.me:serverapp/web-automation.git',
+                                                                     refspec      : "+refs/heads/${env.BRANCH_NAME}:refs/remotes/origin/${env.BRANCH_NAME} ",],],],)
+    loader.loadLocalScripts(['commonData': './ci/CommonData.groovy',])
+}
+
 loadCommonDataScript()
 
 def allureLaunchId = 0
@@ -108,18 +128,17 @@ def getFullRunTestCommand(params, testIdsAsString) {
     def isAllureId = params.is_allure_id?.toBoolean()
     def isAllureIdProvidedInTestFilter = !(testFilter.isEmpty()) && isAllureId
     def projects = getProjectToRun(params.BROWSER)
-    def baseRunTestCommand = " npx browserstack-node-sdk playwright test registration.spec.ts ${stageWithLwc} ${workers} --config=./playwright.local.config.js --project=${projects}"
+    def baseRunTestCommand = "npx browserstack-node-sdk playwright test registration.spec.ts ${stageWithLwc} ${workers} --config=./playwright.local.config.js ${projects}"
     if (testIdsAsString) {
         return "${baseRunTestCommand} -g ${testIdsAsString}"
     } else if (!testFilter) {
         return baseRunTestCommand
     } else if (isAllureId && testFilter) {
-        return "${baseRunTestCommand} -g ${getAllureIdsAsString(testFilter)}";
+        return "${baseRunTestCommand} -g ${getAllureIdsAsString(testFilter)}"
     } else {
         return "${baseRunTestCommand} ${testFilter}"
     }
 }
-
 
 def getProjectToRun(String browser) {
     switch (browser) {
@@ -140,26 +159,4 @@ def getAllureIdsAsString(testFilter) {
     def commaAndWhitespaceCharactersRegex = /\s*,\s*|\s+/
     def testFilterAllureIds = testFilter.split(commaAndWhitespaceCharactersRegex).join("|")
     return "'${testFilterAllureIds}'"
-}
-
-void loadCommonDataScript() {
-    node('mr-builder') {
-        env.BRANCH_NAME = params.BRANCH ?: "master"
-        checkout(poll: false, scm: [$class                           : 'GitSCM',
-                                    branches                         : [[name: "origin/${env.BRANCH_NAME}",],],
-                                    doGenerateSubmoduleConfigurations: false,
-                                    extensions                       : [[$class: 'UserIdentity', email: 'build@jenkins-prd.tango.corp', name: 'build',],
-                                                                        [$class      : 'CloneOption',
-                                                                         noTags      : true,
-                                                                         shallow     : false,
-                                                                         honorRefspec: true,
-                                                                         reference   : "${env.HOME}/.tangobuild/tango",
-                                                                         timeout     : 30,],
-                                                                        [$class: 'CleanBeforeCheckout', deleteUntrackedNestedRepositories: true,],],
-                                    submoduleCfg                     : [],
-                                    userRemoteConfigs                : [[credentialsId: 'gitlab_ssh_build',
-                                                                         url          : 'git@gitlab.tango.me:serverapp/web-automation.git',
-                                                                         refspec      : "+refs/heads/${env.BRANCH_NAME}:refs/remotes/origin/${env.BRANCH_NAME} ",],],],)
-        loader.loadLocalScripts(['commonData': './ci/CommonData.groovy',])
-    }
 }
