@@ -16,6 +16,10 @@ pipeline {
   stages {
     stage('Install Dependencies') {
       steps {
+        sh '''
+          rm -f playwright.config.js
+          rm -f playwright.local.config.js
+        '''
         sh 'npm install'
         sh 'npx playwright install --with-deps'
       }
