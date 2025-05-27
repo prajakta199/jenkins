@@ -1,4 +1,4 @@
-ns# =============================
+
 # Set BrowserStack Credentials
 # =============================
 # Add your BrowserStack userName and accessKey here or set BROWSERSTACK_USERNAME and
