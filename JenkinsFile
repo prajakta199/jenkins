@@ -25,14 +25,26 @@ pipeline {
     stage('Run Tests on BrowserStack') {
       steps {
         browserstack(credentialsId: 'c0a615d1-bcd6-4909-9043-fcca87fd1421') {
-          script {
-            def project = getProjectToRun(params.BROWSER)
+    script {
+            def project = ""
+            switch (params.BROWSER) {
+              case "chrome":
+                project = "--project=chrome-latest:OSX Big Sur-browserstack"
+                break
+              case "edge":
+                project = "--project=edge-latest:Windows 10-browserstack"
+                break
+              case "all":
+                project = "--project=chrome-latest:OSX Big Sur-browserstack,edge-latest:Windows 10-browserstack"
+                break
+              default:
+                error "Unknown browser specified: ${params.BROWSER}"
+            }
             def command = "npx browserstack-node-sdk playwright test --config=./playwright.local.config.js ${project}"
             echo "Running: ${command}"
             sh command
           }
         }
-      }
     }
   }
 }
