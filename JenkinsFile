@@ -30,7 +30,7 @@ pipeline {
         browserstack(credentialsId: 'c0a615d1-bcd6-4909-9043-fcca87fd1421') {
           script {
             def project = getProjectToRun(params.BROWSER)
-            def command = "npx browserstack-node-sdk playwright test ${project}"
+            def command = "npx browserstack-node-sdk playwright test --config=./playwright.local.config.js ${project}"
             echo "Running: ${command}"
             sh command
           }
