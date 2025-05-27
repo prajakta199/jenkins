@@ -39,7 +39,7 @@ pipeline {
               default:
                 error "Unknown browser specified: ${params.BROWSER}"
             }
-            def command = "npx browserstack-node-sdk playwright test --config=./playwright.local.config.js ${project}"
+            def command = "npx browserstack-node-sdk playwright test --config=./playwright.local.config.js \"${project}\""
             echo "Running: ${command}"
             sh command
           }
