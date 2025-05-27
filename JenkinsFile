@@ -4,6 +4,11 @@ pipeline {
   tools {
     nodejs "node"
   }
+node_modules/browserstack-node-sdk/src/bin/playwright/mock-process.js:1:17099)
+
+
+Copy
+
 
  parameters {
   choice(
