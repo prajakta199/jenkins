@@ -4,19 +4,14 @@ pipeline {
   tools {
     nodejs "node"
   }
-node_modules/browserstack-node-sdk/src/bin/playwright/mock-process.js:1:17099)
 
-
-Copy
-
-
- parameters {
-  choice(
-    name: 'BROWSER',
-    choices: ['chrome', 'edge', 'all'],
-    description: 'Choose the browser to run tests on (based on defined Playwright projects)'
-  )
-}
+  parameters {
+    choice(
+      name: 'BROWSER',
+      choices: ['chrome', 'edge', 'all'],
+      description: 'Choose the browser to run tests on (based on defined Playwright projects)'
+    )
+  }
 
   stages {
     stage('Install Dependencies') {
@@ -25,7 +20,6 @@ Copy
         sh 'npx playwright install --with-deps'
       }
     }
-
 
     stage('Run Tests on BrowserStack') {
       steps {
@@ -41,14 +35,15 @@ Copy
     }
   }
 }
+
 def getProjectToRun(String browser) {
   switch (browser) {
     case "chrome":
-      return "'--project=chrome-latest:OSX Big Sur-browserstack'"
+      return "--project=chrome-latest:OSX Big Sur-browserstack"
     case "edge":
-      return "'--project=edge-latest:Windows 10-browserstack'"
+      return "--project=edge-latest:Windows 10-browserstack"
     case "all":
-      return "'--project=chrome-latest:OSX Big Sur-browserstack,edge-latest:Windows 10-browserstack'"
+      return "--project=chrome-latest:OSX Big Sur-browserstack,edge-latest:Windows 10-browserstack"
     default:
       error "Unknown browser specified: ${browser}"
   }
