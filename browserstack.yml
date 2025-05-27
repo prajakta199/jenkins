@@ -1,4 +1,4 @@
-# =============================
+ns# =============================
 # Set BrowserStack Credentials
 # =============================
 # Add your BrowserStack userName and accessKey here or set BROWSERSTACK_USERNAME and
@@ -27,7 +27,7 @@ parallelsPerPlatform: 5
 browserstackLocal: true
 buildName: bstack-demo
 buildIdentifier: ${BUILD_NUMBER}
-projectName: edge-latest:Windows 10-browserstack
+projectName: Jenkins
 testObservability: true
 networkLogs: false # with true - not working broadcasting
 consoleLogs: info
