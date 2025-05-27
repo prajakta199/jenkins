@@ -16,7 +16,6 @@ pipeline {
   stages {
     stage('Install Dependencies') {
       steps {
-       
         sh 'npm install'
         sh 'npx playwright install --with-deps'
       }
@@ -25,7 +24,7 @@ pipeline {
     stage('Run Tests on BrowserStack') {
       steps {
         browserstack(credentialsId: 'c0a615d1-bcd6-4909-9043-fcca87fd1421') {
-    script {
+          script {
             def project = ""
             switch (params.BROWSER) {
               case "chrome":
@@ -45,7 +44,7 @@ pipeline {
             sh command
           }
         }
+      }
     }
-  }
-}
-
+  } // <- closes `stages`
+} // <- closes `pipeline`
