@@ -49,15 +49,3 @@ pipeline {
   }
 }
 
-def getProjectToRun(String browser) {
-  switch (browser) {
-    case "chrome":
-      return "--project=chrome-latest:OSX Big Sur-browserstack"
-    case "edge":
-      return "--project=edge-latest:Windows 10-browserstack"
-    case "all":
-      return "--project=chrome-latest:OSX Big Sur-browserstack,edge-latest:Windows 10-browserstack"
-    default:
-      error "Unknown browser specified: ${browser}"
-  }
-}
