@@ -24,7 +24,7 @@ pipeline {
 
     stage('Run Tests on BrowserStack') {
       steps {
-        browserstack(credentialsId: 'ce17c56d-ea58-4b36-84cf-8532bbbc6e03') {
+        browserstack(credentialsId: 'c0a615d1-bcd6-4909-9043-fcca87fd1421') {
           script {
             def project = getProjectToRun(params.BROWSER)
             def command = "npx browserstack-node-sdk playwright test --config=./playwright.local.config.js ${project}"
