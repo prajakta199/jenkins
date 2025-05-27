@@ -19,7 +19,7 @@ const config = {
   /* Configure projects for major browsers */
 projects: [
     {
-      name: 'osx_big_sur_chrome',
+      name: 'chrome-latest:OSX Big Sur-browserstack',
       use: {
         browserName: 'chromium',
         channel: 'chrome',
@@ -28,7 +28,7 @@ projects: [
       },
     },
     {
-      name: 'win10_edge',
+      name: 'edge-latest:Windows 10-browserstack',
       use: {
         browserName: 'chromium',
         channel: 'msedge',
