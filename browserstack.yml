@@ -29,6 +29,7 @@ buildName: Build_
 buildIdentifier: ${BUILD_NUMBER}
 projectName: OpenBet
 testObservability: true
+accessibility: true
 networkLogs: false # with true - not working broadcasting
 consoleLogs: info
 turboScale: true
