@@ -25,9 +25,9 @@ platforms:
       - name: win10_edge
 parallelsPerPlatform: 5
 browserstackLocal: true
-buildName: bstack-demo
+buildName: Build_
 buildIdentifier: ${BUILD_NUMBER}
-projectName: Jenkins
+projectName: OpenBet
 testObservability: true
 networkLogs: false # with true - not working broadcasting
 consoleLogs: info
