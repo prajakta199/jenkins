@@ -36,4 +36,5 @@ browserStackLocalOptions:
   args: --use-system-installed-ca
 framework: playwright
 debug: true
+testObservability: true
 video: true
