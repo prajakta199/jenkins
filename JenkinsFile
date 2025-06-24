@@ -5,6 +5,11 @@ pipeline {
     nodejs "node"
   }
 
+environment {
+    BS_CREDENTIAL_ID = 'c0a615d1-bcd6-4909-9043-fcca87fd1421' // This is the ID you defined above
+  }
+
+
   parameters {
     choice(
       name: 'BROWSER',
@@ -23,7 +28,7 @@ pipeline {
 
     stage('Run Tests on BrowserStack') {
       steps {
-        browserstack(credentialsId: 'c0a615d1-bcd6-4909-9043-fcca87fd1421') {
+        browserstack(credentialsId: env.BS_CREDENTIAL_ID) {
           script {
             def project = ""
             switch (params.BROWSER) {
