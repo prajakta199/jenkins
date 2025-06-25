@@ -25,9 +25,9 @@ platforms:
       - name: win10_edge
 parallelsPerPlatform: 5
 browserstackLocal: true
-buildName: Build_
 buildIdentifier: ${BUILD_NUMBER}
-projectName: OpenBet
+buildName: Build_
+projectName: Automate_E2E_Flow
 accessibility: true
 networkLogs: false # with true - not working broadcasting
 consoleLogs: info
